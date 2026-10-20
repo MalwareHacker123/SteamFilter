@@ -12,7 +12,6 @@
 ### 4. Every table needs a search_id, user_id, date it was searched, can have multiple geners and keywords.
 ### 5. Every rating needs rating_id, sent_user, rec_user, and when it was sent. Does not need a responce though.
 #
-# data dictionary with entity relationship diagram
 # Data Dictionary & Entity Relationship Diagram
 
 ## Entity Relationship Diagram
