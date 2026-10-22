@@ -1,0 +1,1 @@
+psql -h localhost -U project_user -d steam_db -c "\dt"
