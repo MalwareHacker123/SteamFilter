@@ -2,8 +2,16 @@
 # Purpose
 ### The purpose of this project is to help steam users find games that might not pop up on their regular steam homepage. It helps filter, find, and secure great games with a user ran and reviewed rating system. Its simple, easy, and fun to use! Its a great software for new gamers and verterans alike.
 #
-# Use Cases
-### My system uses well thought out filter and recommendations through remerebing users and keeping track of their searches, favorite games, rated games, cost, player count, and steam reviews. Users have drop boxes and boxes to type and check off what they want to see or not.
+|  | Use Case |
+|---|----------|
+| 1 | As a user, I need to be able to check boxes to find spefic games |
+| 2 | As a user, I need to view every game on steam |
+| 3 | As a user, I need to favorite and store in memeory what games I enjoy. |
+| 4 | As a user, I need to view all my history and previous games |
+| 5 | As a user, I need to update and say weather I own the game or not |
+| 6 | As a user, I need to be able to find games through a search bar directly |
+| 7 | As a user, I need to be able to review the game and weather I like it or not (reccomendations) |
+| 8 | As a user, I need to delete a game I no longer own or No longer want.| 
 #
 # Business Rules
 ### 1. Every account (User_id) only have one username and one Hash password.
@@ -12,6 +20,7 @@
 ### 4. Every table needs a search_id, user_id, date it was searched, can have multiple geners and keywords.
 ### 5. Every rating needs rating_id, sent_user, rec_user, and when it was sent. Does not need a responce though.
 #
+# data dictionary with entity relationship diagram
 # Data Dictionary & Entity Relationship Diagram
 
 ## Entity Relationship Diagram
