@@ -27,27 +27,43 @@
 
 ```mermaid
 erDiagram
-    user_log {
+    users ||--o{ user_favorites : "has"
+    game_log ||--o{ user_favorites : "has"
+    users ||--o{ user_reviews : "writes"
+    game_log ||--o{ user_reviews : "receives"
+    users ||--o{ search : "performs"
+
+    users {
         INT user_id PK
         VARCHAR username UK
-        VARCHAR hash_password
+        VARCHAR email UK
+        TIMESTAMP created_at
     }
 
     game_log {
         INT game_id PK
-        INT player_count
-        VARCHAR genre
-        DECIMAL rating
-        INT total_plays
-        VARCHAR publisher
+        VARCHAR game_name
         DECIMAL price
-        INT year
+        INT player_count
+        DECIMAL rating_score
+        INT total_reviews
+        VARCHAR genre
+        VARCHAR publisher
     }
 
-    star {
-        INT game_id PK, FK
+    user_favorites {
         INT user_id PK, FK
-        TIMESTAMP starred_at
+        INT game_id PK, FK
+        TIMESTAMP added_at
+    }
+
+    user_reviews {
+        INT review_id PK
+        INT user_id FK
+        INT game_id FK
+        DECIMAL rating
+        TEXT review_text
+        TIMESTAMP created_at
     }
 
     search {
@@ -57,23 +73,6 @@ erDiagram
         DATE day
         VARCHAR genre
     }
-
-    rating {
-        INT rating_id PK
-        INT sent_user FK
-        INT rec_user FK
-        DATE date
-        TEXT response
-    }
-
-    user_log ||--o{ star : "has"
-    game_log ||--o{ star : "has"
-    user_log ||--o{ search : "performs"
-    user_log ||--o{ rating : "sends"
-    user_log ||--o{ rating : "receives"
-```
-
----
 
 ## Data Dictionary
 
