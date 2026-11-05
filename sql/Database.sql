@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS rating, search, star, game_log, user_log CASCADE;
 
 CREATE TABLE user_log (
-    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     username VARCHAR(100) NOT NULL UNIQUE,
     hash_password VARCHAR(255) NOT NULL
 );
@@ -15,7 +15,7 @@ CREATE TABLE game_log (
     publisher VARCHAR(100),
     price DECIMAL(10, 2) CHECK (price >= 0.00),
     year INT CHECK (year >= 1970)
-;
+);
 
 CREATE TABLE star (
     game_id INT NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE search (
     user_id INT NOT NULL,
     keyword VARCHAR(255),
     day DATE DEFAULT CURRENT_DATE,
-    genre VARCHAR(50),
+    genre VARCHAR(255),
     CONSTRAINT fk_search_user FOREIGN KEY (user_id) REFERENCES user_log(user_id) ON DELETE CASCADE
 );
 
@@ -39,7 +39,7 @@ CREATE TABLE rating (
     rating_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     sent_user INT NOT NULL,
     rec_user INT NOT NULL,
-    date DATE DATE DEFAULT CURRENT_DATE,
+    date DATE DEFAULT CURRENT_DATE,
     response TEXT,
     CONSTRAINT chk_different_users CHECK (sent_user <> rec_user),
     CONSTRAINT fk_rating_sent FOREIGN KEY (sent_user) REFERENCES user_log(user_id) ON DELETE CASCADE,

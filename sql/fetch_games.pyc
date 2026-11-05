@@ -1,0 +1,113 @@
+import time
+import requests
+import psycopg2
+
+# Database Connection Configuration
+DB_HOST = "localhost"
+DB_NAME = "steam_db"
+DB_USER = "project_user"
+DB_PASS = "choose_a_password"
+
+def get_db_connection():
+    return psycopg2.connect(
+        host=DB_HOST,
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASS
+    )
+
+def fetch_and_populate():
+    print("Fetching game list from Steam...")
+    # Public endpoint (no API key required)
+    app_list_url = "https://api.steampowered.com/ISteamApps/GetAppList/v2/"
+    
+    try:
+        response = requests.get(app_list_url, timeout=10)
+    except Exception as e:
+        print(f"Network error connecting to Steam: {e}")
+        return
+
+    if response.status_code != 200:
+        print(f"Failed to fetch game list. HTTP Status Code: {response.status_code}")
+        return
+
+    apps = response.json().get("applist", {}).get("apps", [])
+    print(f"Total apps found: {len(apps)}")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Process the first 50 games (adjust limit as needed)
+    count = 0
+    for app in apps[:50]:
+        game_id = app["appid"]
+        
+        # Fetch public store details
+        details_url = f"https://store.steampowered.com/api/appdetails?appids={game_id}"
+        try:
+            detail_res = requests.get(details_url, timeout=10).json()
+        except Exception:
+            time.sleep(1)
+            continue
+
+        if detail_res and str(game_id) in detail_res and detail_res[str(game_id)].get("success"):
+            data = detail_res[str(game_id)]["data"]
+            
+            # Filter out non-game entries (DLC, hardware, soundtracks, etc.)
+            if data.get("type") != "game":
+                continue
+
+            # Truncate strings to fit database VARCHAR limits
+            genre = "Unknown"
+            if "genres" in data and len(data["genres"]) > 0:
+                genre = data["genres"][0].get("description", "Unknown")[:50]
+
+            publisher = "Unknown"
+            if "publishers" in data and len(data["publishers"]) > 0 and data["publishers"][0]:
+                publisher = data["publishers"][0][:100]
+
+            # Extract price (convert cents to dollars)
+            price = 0.00
+            if "price_overview" in data and "initial" in data["price_overview"]:
+                price = round(data["price_overview"]["initial"] / 100.0, 2)
+
+            # Extract year (ensure >= 1970 to pass database CHECK constraint)
+            year = 1970
+            if "release_date" in data and "date" in data["release_date"]:
+                date_str = data["release_date"]["date"]
+                parts = date_str.split(",")
+                if len(parts) > 1 and parts[-1].strip().isdigit():
+                    parsed_year = int(parts[-1].strip())
+                    if parsed_year >= 1970:
+                        year = parsed_year
+
+            rating = 0.00
+            player_count = 0
+            total_plays = 0
+
+            # Insert or update database record
+            insert_query = """
+            INSERT INTO game_log (game_id, player_count, genre, rating, total_plays, publisher, price, year)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (game_id) DO UPDATE 
+            SET genre = EXCLUDED.genre,
+                publisher = EXCLUDED.publisher,
+                price = EXCLUDED.price,
+                year = EXCLUDED.year;
+            """
+            
+            cursor.execute(insert_query, (game_id, player_count, genre, rating, total_plays, publisher, price, year))
+            conn.commit()
+            
+            count += 1
+            print(f"[{count}] Saved: {app.get('name', 'Unknown')} (ID: {game_id})")
+
+        # Pause 1 second between requests to respect Steam store rate limits
+        time.sleep(1)
+
+    cursor.close()
+    conn.close()
+    print("\nDatabase population complete!")
+
+if __name__ == "__main__":
+    fetch_and_populate()
