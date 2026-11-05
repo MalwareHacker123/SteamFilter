@@ -1,5 +1,6 @@
 .env
-*.env
-*.csv
-*.json
-*.dump
+.venv/
+logs/*.log
+__pycache__/
+*.pyc
+fetch_games.py
