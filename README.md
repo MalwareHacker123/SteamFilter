@@ -13,7 +13,21 @@
 ### 5. Every review needs review_id, user_id, game_id, rating score (1.00 to 10.00), optional review text, and timestamp when created.
 #
 # data dictionary with entity relationship diagram
-# Data Dictionary & Entity Relationship Diagram
+# Steam 2.0 REST API
+
+A Flask REST API integrated with PostgreSQL (`steam_db`) and `Flask-Login` for session authentication.
+
+## Setup & Execution
+
+1. **Activate Virtual Environment:**
+   ```bash
+   source .venv/bin/activate
+
+
+
+
+
+
 
 ## Entity Relationship Diagram
 
