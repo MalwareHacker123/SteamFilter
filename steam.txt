@@ -1,0 +1,71 @@
+
+================================================================================
+STEAM 2.0 REST API — PROJECT OVERVIEW & TECHNICAL EXPLANATION
+================================================================================
+
+1. PROJECT OVERVIEW
+--------------------------------------------------------------------------------
+This project implements a secure, role-based RESTful API for Steam catalog management 
+and user reviews, built with Python (Flask), PostgreSQL (steam_db), and Flask-Login.
+
+- Base API URL: http://127.0.0.1:5000/api
+- Data Interchange Format: JSON (application/json)
+- Authentication Mechanism: Session-based authentication via HTTP cookies
+
+--------------------------------------------------------------------------------
+2. TECHNICAL ARCHITECTURE & SECURITY IMPLEMENTATION
+--------------------------------------------------------------------------------
+- Database Layer: PostgreSQL database (`steam_db`) storing catalog records in 
+  `games`, user profiles in `app_user`, and user feedback in `user_reviews`.
+- Authentication & RBAC: Integrated `Flask-Login` session management enforcing 3 tiers:
+    1. Unauthenticated (Public): Read-only access to catalog search and game details.
+    2. Viewer Role: Can log in, check profile (`/api/me`), write reviews, and list own reviews.
+    3. Admin Role: Can upsert/update game records and delete any user review.
+- Security Hardening: Sensitive database connection strings and secret keys are stored 
+  in `.env` and excluded from source control via `.gitignore`.
+
+--------------------------------------------------------------------------------
+3. RESOLVED DATABASE CONSTRAINTS & ISSUE TROUBLESHOOTING
+--------------------------------------------------------------------------------
+- Foreign Key Conflict Resolution: Removed an obsolete foreign key constraint 
+  (`user_reviews_user_id_fkey`) pointing to a legacy `users` table, re-attaching 
+  `user_reviews.user_id` correctly to `app_user(id)`.
+- Sequence Synchronization: Restored sequence state on `user_reviews_review_id_seq` 
+  to ensure dynamic review posting creates valid, incrementing primary keys.
+
+--------------------------------------------------------------------------------
+4. AUTOMATED TEST SUITE & VERIFICATION (test_api.py)
+--------------------------------------------------------------------------------
+Automated testing is executed via `requests.Session()` to persist authentication cookies 
+across requests. All 14 test cases pass cleanly:
+
+ [PASSED] Public Top Rated Games (200 OK)
+ [PASSED] Public Game Search (200 OK)
+ [PASSED] Unauthenticated /api/me Protection (401 Unauthorized)
+ [PASSED] Unauthenticated Review Submission Protection (401 Unauthorized)
+ [PASSED] Viewer Login (200 OK)
+ [PASSED] Viewer Profile Check (200 OK)
+ [PASSED] Viewer Post Review (201 Created)
+ [PASSED] Viewer Get My Reviews (200 OK)
+ [PASSED] Viewer Admin Action Attempt (403 Forbidden)
+ [PASSED] Admin Login (200 OK)
+ [PASSED] Admin Upsert Game Record (200 OK)
+ [PASSED] Admin Delete Review (200 OK)
+ [PASSED] Viewer Logout (200 OK)
+ [PASSED] Viewer Access After Logout (401 Unauthorized)
+
+--------------------------------------------------------------------------------
+5. SUMMARY OF API ENDPOINTS
+--------------------------------------------------------------------------------
+- POST   /api/login             - Authenticates credentials & creates session cookie
+- POST   /api/logout            - Destroys active user session
+- GET    /api/me                - Returns current user session info and role
+- GET    /api/games             - Query catalog (supports `q`, `genre`, `min_rating`, `max_price`)
+- GET    /api/games/top-rated   - Catalog ordered by review score
+- GET    /api/games/most-played - Catalog ordered by live player count
+- GET    /api/games/free        - Top-rated free-to-play games
+- GET    /api/games/<id>        - Game details with nested user reviews
+- POST   /api/reviews           - Submit new user review (Logged-in users)
+- GET    /api/my-reviews        - Fetch reviews submitted by active user
+- POST   /api/admin/games       - Insert/Update catalog records (Admin only)
+- DELETE /api/admin/reviews/<id>- Remove user review by ID (Admin only)
