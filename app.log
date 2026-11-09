@@ -1,0 +1,35 @@
+nohup: ignoring input
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 222-899-390
+127.0.0.1 - - [09/Nov/2026 13:28:42] "GET /api/games/top-rated HTTP/1.1" 200 -
+127.0.0.1 - - [09/Nov/2026 13:28:42] "[31m[1mGET /api/me HTTP/1.1[0m" 401 -
+127.0.0.1 - - [09/Nov/2026 13:28:43] "POST /api/login HTTP/1.1" 200 -
+127.0.0.1 - - [09/Nov/2026 13:28:43] "GET /api/me HTTP/1.1" 200 -
+127.0.0.1 - - [09/Nov/2026 13:28:43] "[35m[1mPOST /api/reviews HTTP/1.1[0m" 201 -
+127.0.0.1 - - [09/Nov/2026 13:28:43] "[31m[1mPOST /api/admin/games HTTP/1.1[0m" 403 -
+127.0.0.1 - - [09/Nov/2026 13:28:43] "POST /api/login HTTP/1.1" 200 -
+127.0.0.1 - - [09/Nov/2026 13:28:43] "POST /api/admin/games HTTP/1.1" 200 -
+127.0.0.1 - - [09/Nov/2026 13:28:43] "POST /api/logout HTTP/1.1" 200 -
+127.0.0.1 - - [09/Nov/2026 13:28:43] "[31m[1mGET /api/me HTTP/1.1[0m" 401 -
+127.0.0.1 - - [09/Nov/2026 13:29:44] "POST /api/login HTTP/1.1" 200 -
+127.0.0.1 - - [09/Nov/2026 13:29:44] "[31m[1mGET /api/me HTTP/1.1[0m" 401 -
+127.0.0.1 - - [09/Nov/2026 13:33:28] code 400, message Bad request version ("\x02îzªî$nÃ0×¥5(sý*!%\x8a!@Ã|ç4\xad¸î\x00<\x13\x02\x13\x03\x13\x01À,À0\x00\x9fÌ©Ì¨ÌªÀ+À/\x00\x9eÀ$À(\x00kÀ#À'\x00gÀ")
+127.0.0.1 - - [09/Nov/2026 13:33:28] "[31m[1m\x16\x03\x01\x06\x07\x01\x00\x06\x03\x03\x03\x057E\x8aà¿:ø\x83\x95@\x0d\x97Ü\x15\x04x¯\x7fXl\x16\x8fõ$6Üì, Á) ç\x96à\x0d\x02îzªî$nÃ0×¥5(sý*!%\x8a!@Ã|ç4­¸î\x00<\x13\x02\x13\x03\x13\x01À,À0\x00\x9fÌ©Ì¨ÌªÀ+À/\x00\x9eÀ$À(\x00kÀ#À'\x00gÀ[0m" 400 -
+127.0.0.1 - - [09/Nov/2026 13:33:45] "POST /api/login HTTP/1.1" 200 -
+127.0.0.1 - - [09/Nov/2026 13:33:45] "POST /api/login HTTP/1.1" 200 -
+127.0.0.1 - - [09/Nov/2026 13:33:59] "[31m[1mGET /api/me HTTP/1.1[0m" 401 -
+127.0.0.1 - - [09/Nov/2026 13:40:48] "GET /api/games/top-rated HTTP/1.1" 200 -
+127.0.0.1 - - [09/Nov/2026 13:40:55] "[31m[1mGET /api/me HTTP/1.1[0m" 401 -
+127.0.0.1 - - [09/Nov/2026 13:44:01] "POST /api/login HTTP/1.1" 200 -
+127.0.0.1 - - [09/Nov/2026 13:44:11] "GET /api/me HTTP/1.1" 200 -
+127.0.0.1 - - [09/Nov/2026 13:44:15] "[31m[1mPOST /api/admin/games HTTP/1.1[0m" 403 -
+127.0.0.1 - - [09/Nov/2026 13:44:28] "POST /api/login HTTP/1.1" 200 -
+127.0.0.1 - - [09/Nov/2026 13:44:32] "POST /api/admin/games HTTP/1.1" 200 -
+127.0.0.1 - - [09/Nov/2026 13:46:14] "POST /api/logout HTTP/1.1" 200 -
+127.0.0.1 - - [09/Nov/2026 13:46:18] "[31m[1mGET /api/me HTTP/1.1[0m" 401 -
