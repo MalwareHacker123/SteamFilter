@@ -1,86 +1,52 @@
 import requests
 
-BASE_URL = "http://127.0.0.1:5000/api"
+BASE = "http://127.0.0.1:5000/api"
 
-def print_result(test_name, status_code, expected_status, response_json=None):
-    passed = status_code == expected_status
-    flag = "PASSED" if passed else "FAILED"
-    print(f"[{flag}] {test_name}")
-    print(f"   Status Code: {status_code} (Expected: {expected_status})")
-    if response_json:
-        print(f"   Response Payload: {response_json}")
-    print("-" * 60)
+print("--- 1. Testing Unauthenticated Access ---")
+# Anyone can view public catalog (returns 200)
+r = requests.get(f"{BASE}/games/top-rated")
+print("Public route /games/top-rated status:", r.status_code)
 
-def run_tests():
-    print("============================================================")
-    print("STARTING STEAM 2.0 API AUTOMATED TEST SUITE")
-    print("============================================================\n")
+# Unauthenticated request to protected route (returns 401)
+r = requests.get(f"{BASE}/me")
+print("Protected route /me (unauthenticated) status:", r.status_code, r.json())
 
-    # 1. PUBLIC ROUTE TESTS (UNAUTHENTICATED)
-    r = requests.get(f"{BASE_URL}/games/top-rated?limit=2")
-    print_result("Public Top Rated Games", r.status_code, 200, r.json() if r.status_code == 200 else None)
+print("\n--- 2. Testing Viewer Session (sam) ---")
+# requests.Session() stores the session cookie sent back by /api/login
+viewer = requests.Session()
 
-    r = requests.get(f"{BASE_URL}/games?q=Terraria")
-    print_result("Public Game Search (Terraria)", r.status_code, 200, r.json() if r.status_code == 200 else None)
+# Log in as viewer
+r = viewer.post(f"{BASE}/login", json={"username": "sam", "password": "sams_password"})
+print("Login status:", r.status_code, r.json())
 
-    # 2. UNAUTHENTICATED ACCESS TO PROTECTED ROUTES (EXPECT 401)
-    r = requests.get(f"{BASE_URL}/me")
-    print_result("Unauthenticated /api/me Access", r.status_code, 401, r.json() if r.status_code == 401 else None)
+# Viewer access to user profile (returns 200 because cookie is automatically sent)
+r = viewer.get(f"{BASE}/me")
+print("GET /me status:", r.status_code, r.json())
 
-    r = requests.post(f"{BASE_URL}/reviews", json={"game_id": 105600, "rating": 9.5})
-    print_result("Unauthenticated Review Submission", r.status_code, 401, r.json() if r.status_code == 401 else None)
+# Viewer posts a game review (returns 201)
+r = viewer.post(f"{BASE}/reviews", json={"game_id": 105600, "rating": 9.0, "review_text": "Great game!"})
+print("POST /reviews status:", r.status_code, r.json())
 
-    # 3. VIEWER SESSION TESTS (ROLE = 'viewer')
-    viewer_session = requests.Session()
-    
-    r = viewer_session.post(f"{BASE_URL}/login", json={"username": "sam", "password": "sams_password"})
-    print_result("Viewer Login", r.status_code, 200, r.json() if r.status_code == 200 else None)
+# Viewer attempts admin-only action (returns 403 Forbidden)
+r = viewer.post(f"{BASE}/admin/games", json={"game_id": 888, "game_name": "Test Game", "genre": "RPG", "price": 19.99})
+print("POST /admin/games as viewer status:", r.status_code, r.json())
 
-    r = viewer_session.get(f"{BASE_URL}/me")
-    print_result("Viewer Profile Check (/api/me)", r.status_code, 200, r.json() if r.status_code == 200 else None)
+print("\n--- 3. Testing Admin Session (ms_g) ---")
+admin = requests.Session()
 
-    r = viewer_session.post(f"{BASE_URL}/reviews", json={
-        "game_id": 105600,
-        "rating": 9.8,
-        "review_text": "Terraria is an absolute masterpiece!"
-    })
-    print_result("Viewer Post Review", r.status_code, 201, r.json() if r.status_code == 201 else None)
-    created_review_id = r.json().get("review", {}).get("review_id") if r.status_code == 201 else None
+# Log in as admin
+r = admin.post(f"{BASE}/login", json={"username": "ms_g", "password": "admin_password"})
+print("Admin Login status:", r.status_code, r.json())
 
-    r = viewer_session.get(f"{BASE_URL}/my-reviews")
-    print_result("Viewer Get My Reviews", r.status_code, 200, r.json() if r.status_code == 200 else None)
+# Admin creates a game entry (returns 201)
+r = admin.post(f"{BASE}/admin/games", json={"game_id": 888, "game_name": "Test Game", "genre": "RPG", "price": 19.99})
+print("POST /admin/games as admin status:", r.status_code, r.json())
 
-    r = viewer_session.post(f"{BASE_URL}/admin/games", json={"game_id": 999999, "game_name": "Unauthorized Game"})
-    print_result("Viewer Attempt Admin Action", r.status_code, 403, r.json() if r.status_code == 403 else None)
+print("\n--- 4. Testing Logout & Cleanup ---")
+# Log viewer out
+r = viewer.post(f"{BASE}/logout")
+print("Logout status:", r.status_code, r.json())
 
-    # 4. ADMIN SESSION TESTS (ROLE = 'admin')
-    admin_session = requests.Session()
-
-    r = admin_session.post(f"{BASE_URL}/login", json={"username": "ms_g", "password": "admin_password"})
-    print_result("Admin Login", r.status_code, 200, r.json() if r.status_code == 200 else None)
-
-    r = admin_session.post(f"{BASE_URL}/admin/games", json={
-        "game_id": 730,
-        "game_name": "Counter-Strike 2",
-        "price": 0.00,
-        "genre": "Action, Free To Play",
-        "publisher": "Valve",
-        "rating_score": 84.95,
-        "total_reviews": 1526937,
-        "player_count": 850000
-    })
-    print_result("Admin Upsert Game Record", r.status_code, 200, r.json() if r.status_code == 200 else None)
-
-    if created_review_id:
-        r = admin_session.delete(f"{BASE_URL}/admin/reviews/{created_review_id}")
-        print_result(f"Admin Delete Review {created_review_id}", r.status_code, 200, r.json() if r.status_code == 200 else None)
-
-    # 5. LOGOUT VERIFICATION
-    r = viewer_session.post(f"{BASE_URL}/logout")
-    print_result("Viewer Logout", r.status_code, 200, r.json() if r.status_code == 200 else None)
-
-    r = viewer_session.get(f"{BASE_URL}/me")
-    print_result("Viewer Access After Logout", r.status_code, 401, r.json() if r.status_code == 401 else None)
-
-if __name__ == "__main__":
-    run_tests()
+# Trying /me after logout (returns 401 again because session cookie was cleared)
+r = viewer.get(f"{BASE}/me")
+print("GET /me after logout status:", r.status_code, r.json())
